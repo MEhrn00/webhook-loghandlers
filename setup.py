@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name = "webhook_loghandlers",
-    version = "0.0.3",
+    version = "0.0.4",
     description = "Handlers for the logging module to send logs to discord/slack webhooks",
     url = "https://github.com/MEhrn00/webhook-loghandlers",
     author = "Matt Ehrnschwender",
