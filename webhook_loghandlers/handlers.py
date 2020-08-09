@@ -4,12 +4,16 @@ import json
 import requests
 import aiohttp
 import asyncio
+import warnings
 
 
 class DiscordHandler(logging.Handler):
     '''
     Class for sending logs to discord webhooks
     '''
+
+    _invalidURL: bool = False
+
     def __init__(self, url: str, secure: bool = False) -> None:
         '''
         Set up a logging handler for Discord webhooks
@@ -37,7 +41,8 @@ class DiscordHandler(logging.Handler):
         '''
         r = requests.get(url)
         if r.status_code != 200:
-            raise Exception(f'Could not establish connection to webhook. URL returned a {r.status_code}')
+            warnings.warn(f'Error establishing connection to webhook, URL returned a {r.status_code}')
+            self._invalidURL = True
         return
 
     def mapLogRecord(self, record: logging.LogRecord) -> str :
@@ -62,6 +67,9 @@ class DiscordHandler(logging.Handler):
         Returns:
             None
         '''
+        if self._invalidURL:
+            warnings.warm(f'Could not send log to webhook. URL is invalid')
+            return
         asyncio.create_task(self.__postHook(record))
 
     async def __postHook(self, record: str) -> None:
@@ -80,6 +88,7 @@ class DiscordHandler(logging.Handler):
             headers = {'content-type': 'application/json'}
             logMsg = logMsg[:1900]
             data = json.dumps({'content': str(logMsg)})
-            async with aiohttp.request('POST', url, data=data, headers=headers)
+            async with aiohttp.request('POST', url, data=data, headers=headers) as _:
+                return
         except Exception:
             self.handleError(record)
