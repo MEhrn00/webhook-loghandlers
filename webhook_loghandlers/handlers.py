@@ -70,7 +70,10 @@ class DiscordHandler(logging.Handler):
         if self._invalidURL:
             warnings.warm(f'Could not send log to webhook. URL is invalid')
             return
-        asyncio.create_task(self.__postHook(record))
+        loop = asyncio.new_event_loop()
+        future = loop.create_task(self.__postHook(record))
+        loop.run_until_complete(future)
+        loop.close()
 
     async def __postHook(self, record: str) -> None:
         '''
