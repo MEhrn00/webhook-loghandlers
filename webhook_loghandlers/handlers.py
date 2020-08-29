@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import logging
-import json
-import requests
 import aiohttp
 import asyncio
 import warnings
+from discord import Webhook, AsyncWebhookAdapter, Embed
 
 
 class DiscordHandler(logging.Handler):
@@ -14,7 +13,7 @@ class DiscordHandler(logging.Handler):
 
     _invalidURL: bool = False
 
-    def __init__(self, url: str, secure: bool = False) -> None:
+    def __init__(self, url: str, secure: bool = False, embed: Embed = None) -> None:
         '''
         Set up a logging handler for Discord webhooks
 
@@ -27,6 +26,7 @@ class DiscordHandler(logging.Handler):
         logging.Handler.__init__(self)
 
         self.url = url
+        self.embed = embed
         self.__testConnection(url)
 
     def __testConnection(self, url: str) -> None:
@@ -70,10 +70,7 @@ class DiscordHandler(logging.Handler):
         if self._invalidURL:
             warnings.warm(f'Could not send log to webhook. URL is invalid')
             return
-        loop = asyncio.new_event_loop()
-        future = loop.create_task(self.__postHook(record))
-        loop.run_until_complete(future)
-        loop.close()
+        self.__posthook(record)
 
     async def __postHook(self, record: str) -> None:
         '''

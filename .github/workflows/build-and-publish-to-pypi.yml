@@ -1,0 +1,24 @@
+name: Build and publish to pypi
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build_and_publish:
+    name: Build package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - name: Check syntax
+        run: python -m py_compile webhook_loghandlers/handlers.py
+      - name: Build package
+        run: python setup.py build sdist
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_APIKEY }}
+          packages_dir: dist/
