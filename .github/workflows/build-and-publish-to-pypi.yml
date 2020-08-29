@@ -15,8 +15,6 @@ jobs:
         uses: actions/setup-python@v2
       - name: Check syntax
         run: python -m py_compile webhook_loghandlers/handlers.py
-      - name: Sync release
-
       - name: Build package
         run: python setup.py build sdist
       - name: Publish package
